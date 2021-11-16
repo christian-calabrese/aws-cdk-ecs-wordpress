@@ -10,6 +10,7 @@
       "min": 1,
       "max": 4
     },
-    "auto_pause_sec": 300
+    "auto_pause_sec": 300,
+    "custom_kms_encrypted": true
   }
 }
