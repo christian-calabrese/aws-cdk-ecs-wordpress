@@ -1,0 +1,10 @@
+{
+  "name": "prod",
+  "vpc": {
+    "az_number": 3,
+    "nats_number": 3
+  },
+  "aurora": {
+    "serverless": false
+  }
+}

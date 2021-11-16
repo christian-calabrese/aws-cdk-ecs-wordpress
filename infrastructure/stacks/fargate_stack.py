@@ -1,3 +1,4 @@
+import os
 from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
     aws_ec2 as ec2,
@@ -9,9 +10,9 @@ from aws_cdk import (
 )
 
 
-class FargateStack(core.Stack):
+class FargateStack(core.NestedStack):
 
-    def __init__(self, scope: core.Construct, id: str, *, vpc_stack: core.Stack, database_stack: core.Stack,
+    def __init__(self, scope: core.Construct, id: str, params, vpc_stack: core.Stack, database_stack: core.Stack,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -43,30 +44,27 @@ class FargateStack(core.Stack):
             cluster=ecs_cluster,
         )
 
-        ecs_service.add_port_mappings(
-            ecs.PortMapping(container_port=80)
-        )
-
         wordpress_image = ecr_assets.DockerImageAsset(
             self, "Wordpress-ECR-Image",
-            directory=f"../../images/wordpress",
+            directory=f"{os.path.dirname(__file__)}/../../images/wordpress",
             file="Dockerfile",
         )
 
         media_bucket = s3.Bucket(
             self, 'Wordpress-S3-Bucket',
             versioned=False,
-            bucket_name='wordpress_media_s3_bucket',
+            bucket_name='flowing.wp-media.bucket',
             encryption=s3.BucketEncryption.S3_MANAGED,
             removal_policy=core.RemovalPolicy.RETAIN
         )
 
-        ecs_wordpress_task.add_container(
+        ecs_wordpress_container = ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
                 'PRIMARY_DB_URI': database_stack.database.cluster_endpoint.hostname,
-                'SECONDARY_DB_URI': database_stack.replica_database.cluster_endpoint.hostname,
-                'MEDIA_S3_BUCKET': media_bucket.name,
+                'SECONDARY_DB_URI': database_stack.replica_database.cluster_endpoint.hostname if params.aurora.get(
+                    "has_replica", None) else "",
+                'MEDIA_S3_BUCKET': media_bucket.bucket_name,
                 'WORDPRESS_TABLE_PREFIX': 'wp_'
             },
             secrets={
@@ -80,24 +78,34 @@ class FargateStack(core.Stack):
             image=ecs.ContainerImage.from_docker_image_asset(wordpress_image)
         )
 
+        ecs_wordpress_container.add_port_mappings(
+            ecs.PortMapping(container_port=80)
+        )
+
+        media_bucket.grant_read_write(ecs_wordpress_task.task_role)
+        media_bucket.grant_delete(ecs_wordpress_task.task_role)
+
         ecs_wordpress_volume_mount_point = ecs.MountPoint(
             read_only=True,
             container_path="/var/www/html",
             source_volume=wordpress_volume.name
         )
 
-        ecs_wordpress_task.add_mount_points(ecs_wordpress_volume_mount_point)
+        ecs_wordpress_container.add_mount_points(ecs_wordpress_volume_mount_point)
 
-        database_stack.database.connections.allow_default_port_from(ecs_service)
+        ecs_service.connections.allow_from(
+            other=database_stack.database,
+            port_range=database_stack.database.connections.default_port
+        )
         ecs_efs.connections.allow_default_port_from(ecs_service)
 
         scaling = ecs_service.auto_scale_task_count(
             min_capacity=2,
-            max_capacity=50
+            max_capacity=10
         )
         scaling.scale_on_cpu_utilization(
             "Wordpress-ECS-Task",
-            target_utilization_percent=70,
+            target_utilization_percent=75,
             scale_in_cooldown=core.Duration.seconds(120),
             scale_out_cooldown=core.Duration.seconds(30),
         )
