@@ -1,0 +1,6 @@
+aws-cdk.core==1.132.0
+aws-cdk.assertions==1.132.0
+aws_cdk.aws_ec2==1.132.0
+aws_cdk.aws_ecs==1.132.0
+aws_cdk.aws_ecs_patterns==1.132.0
+aws-cdk.aws_rds==1.132.0
