@@ -38,12 +38,14 @@ root
 1. Installa Python (https://www.python.org/downloads/)
 2. Installa node.js (https://nodejs.org/en/download/)
 3. Installa la dipendenza npm di CDK con `npm i -g aws-cdk`
-4. Attiva il Python virtual environment per evitare di sporcare l'ambiente globale
+4. Installa le dipendenze di sviluppo di Python `pip3 install -r requirements-dev.txt`
+5. Crea un Python virtual environment se non esiste `python3 -m venv ./.venv`
+6. Attiva il Python virtual environment per evitare di sporcare l'ambiente globale
    1. Windows `.\.venv\bin\activate`
    2. Unix `source .venv/bin/activate`
-5. Installa le dipendenze Python `pip3 install -r requirements.txt`
-6. Imposta la variabile d'ambiente ENVIRONMENT a dev o prod in base all'ambiente da deployare
-7. Deploya l'infrastruttura tramite `cdk deploy`
+7. Installa le dipendenze Python `pip3 install -r requirements.txt`
+8. Imposta la variabile d'ambiente ENVIRONMENT a dev o prod in base all'ambiente da deployare
+9. Deploya l'infrastruttura tramite `cdk deploy`
 
 ## 2. Scelte architetturali
 #### VPC:
