@@ -15,5 +15,14 @@
     },
     "auto_pause_sec": 300,
     "custom_kms_encrypted": true
+  },
+  "fargate": {
+    "min_capacity": 1,
+    "max_capacity": 2,
+    "spots": {
+      "enabled": true,
+      "spot_weight": 4,
+      "normal_weight": 1
+    }
   }
 }

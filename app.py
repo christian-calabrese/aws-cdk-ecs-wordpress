@@ -4,6 +4,8 @@ import os
 from types import SimpleNamespace
 
 from aws_cdk import core
+from aws_cdk.core import Tags
+
 from infrastructure.infrastructure_stack import InfrastructureStack
 from infrastructure.utils.environment import Environment
 
@@ -12,8 +14,7 @@ env_name = os.environ.get("ENVIRONMENT", "dev")
 with open(f"infrastructure/parameters/{env_name}.json", "r") as f:
     params = json.loads(f.read(), object_hook=lambda d: Environment(**d))
 
-InfrastructureStack(app, "WordpressMainStack",
+main_stack = InfrastructureStack(app, "WordpressMainStack",
                     env=core.Environment(region="eu-west-1"), params=params)
-
-core.Tags.of(InfrastructureStack).add("stack-name", "ChristianCalabreseWordpress")
+Tags.of(main_stack).add("stack_name", "ChristianCalabreseStack")
 app.synth()

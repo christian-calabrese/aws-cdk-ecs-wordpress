@@ -34,7 +34,8 @@ class FargateStack(core.NestedStack):
 
         ecs_cluster = ecs.Cluster(
             self, 'Wordpress-ECS-Cluster',
-            vpc=vpc_stack.vpc
+            vpc=vpc_stack.vpc,
+            enable_fargate_capacity_providers=True
         )
 
         ecs_service = ecs.FargateService(
@@ -42,6 +43,7 @@ class FargateStack(core.NestedStack):
             task_definition=ecs_wordpress_task,
             platform_version=ecs.FargatePlatformVersion.VERSION1_4,
             cluster=ecs_cluster,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
         )
 
         wordpress_image = ecr_assets.DockerImageAsset(
@@ -100,8 +102,8 @@ class FargateStack(core.NestedStack):
         ecs_efs.connections.allow_default_port_from(ecs_service)
 
         scaling = ecs_service.auto_scale_task_count(
-            min_capacity=2,
-            max_capacity=10
+            min_capacity=params.fargate.min_capacity,
+            max_capacity=params.fargate.max_capacity
         )
         scaling.scale_on_cpu_utilization(
             "Wordpress-ECS-Task",
@@ -109,6 +111,20 @@ class FargateStack(core.NestedStack):
             scale_in_cooldown=core.Duration.seconds(30),
             scale_out_cooldown=core.Duration.seconds(30),
         )
+
+        if params.fargate.get("spots", {}).get("enabled", False):
+            fargate_ecs_service = ecs_service.node.try_find_child("Service")
+            fargate_ecs_service.launch_type = None
+            fargate_ecs_service.capacity_provider_strategy = [
+                {
+                    "capacityProvider": "FARGATE_SPOT",
+                    "weight": params.fargate.spots.spot_weight,
+                },
+                {
+                    "capacityProvider": "FARGATE",
+                    "weight": params.fargate.spots.normal_weight,
+                },
+            ]
 
         app_load_balancer = elbv2.ApplicationLoadBalancer(
             self, "Wordpress-ALB",
