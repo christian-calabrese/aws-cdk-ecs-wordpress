@@ -1,10 +1,16 @@
 {
   "name": "prod",
+  "git_repository_name": "wordpress_ha_infrastructure",
+  "github_token_secret_name": "wordpress_secret_github_token",
+  "codestar_connection_id": "a8bf7190-4ce8-4a08-bd8f-6709607c6d15",
   "vpc": {
     "az_number": 3,
     "nats_number": 3
   },
   "aurora": {
-    "serverless": false
+    "serverless": false,
+    "custom_kms_encrypted": true,
+    "az_number": 2,
+    "instance_type": "t3.medium"
   }
 }

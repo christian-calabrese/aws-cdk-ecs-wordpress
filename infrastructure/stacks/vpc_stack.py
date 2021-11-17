@@ -12,7 +12,7 @@ class VpcStack(core.NestedStack):
         self.vpc = ec2.Vpc(
             self,
             "Wordpress-VPC",
-            nat_gateways=3 if params.vpc.nats_number else 1,
+            nat_gateways=params.vpc.get("nats_number", 1),
             max_azs=params.vpc.az_number,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
@@ -23,12 +23,12 @@ class VpcStack(core.NestedStack):
                 ec2.SubnetConfiguration(
                     cidr_mask=28,
                     name='Wordpress-VPC-Private-Subnet',
-                    subnet_type=ec2.SubnetType.PRIVATE,
+                    subnet_type=ec2.SubnetType.ISOLATED,
                 ),
                 ec2.SubnetConfiguration(
                     cidr_mask=24,
                     name='Wordpress-VPC-Natted-Subnet',
-                    subnet_type=ec2.SubnetType.ISOLATED,
+                    subnet_type=ec2.SubnetType.PRIVATE,
                 )
             ]
         )
