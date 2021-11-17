@@ -48,7 +48,7 @@ root
 9. Deploya l'infrastruttura tramite `cdk deploy`
 
 ## 2. Scelte architetturali
-#### VPC:
+### VPC:
 La conformazione della VPC è facilmente personalizzabile tramite l'utilizzo dei parametri.
 Lo stack che deploya la VPC crea sempre delle subnet pubbliche e private.
 Il numero di availability zones su cui vengono create le subnet è pilotato dal parametro `az_number`.
@@ -58,7 +58,7 @@ Inoltre, per gestire al meglio i costi relativi all'infrastruttura di rete, è p
 In ambienti di sviluppo è possibile utilizzare un singolo nat gateway per ridurre i costi (un nat gateway grava intorno ai 30 dollari al mese sul billing AWS).
 In produzione, invece, è consigliato impostare il parametro `nats_number` a `3` (uno per subnet nattata) per evitare di tagliare completamente l'accesso ad internet dell'applicazione in caso di fail di una AZ.
 
-#### Database:
+### Database:
 Per ospitare il database MySql richiesto da Wordpress è stato scelto il servizio gestito di AWS RDS. Più nello specifico è stato utilizzato l'engine Aurora per MySql per la sua migliore integrazione con i servizi AWS e maggiori performance.
 
 A seconda del parametro `aurora.serverless`, è possibile decidere se deployare un cluster serverless o serverful per ogni ambiente.
@@ -68,7 +68,7 @@ Per ovviare alla creazione del nat gateway e delle subnet annesse, è possibile 
 Sconsiglio l'utilizzo di Aurora Serverless v1 in produzione perché fino al rilascio di Aurora Serverless v2, esso [garantisce l'alta disponibilità con ritardi impredittibili](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html#aurora-serverless.failover).
 
 Il database è ospitato nelle subnet private per garantire la segregazione da internet. Per garantire però l'accesso al database da parte degli sviluppatori, è stato anche deployato un bastion host a cui accedere tramite SSM o SSH.
-#### Compute:
+### Compute:
 Come risorsa di computing su cui ospitare l'application server e Wordpress, è stato scelto di utilizzare ECS in modalità Fargate.
 I container Fargate saranno spawnati su subnet nattate per permettere l'accesso ai diversi servizi AWS come ECR ed alla rete internet.
 
@@ -80,7 +80,7 @@ Avendo la necessità di comunicare con il database MySql, i container sono inclu
 
 Inoltre, è stato creato un bucket S3 che contiene gli asset statici di Wordpress. Per permettere la comunicazione del CMS con il Bucket, è stato installato un plug-in tramite la Wordpress CLI (nel Dockerfile) e configurato nel wp-config.php.
 
-#### CI/CD:
+### CI/CD:
 Per soddisfare i requisiti di CI/CD, è stato scelto di creare una semplice pipeline tramite il servizio CodePipeline.
 Essa è composta da due fasi:
    1. Source: il codice di questo repository è prelevato automaticamente da GitHub ad ogni commit. Per permettere l'integrazione tra CodePipeline e GitHub è necessario utilizzare un token oAuth salvato in un secret su secrets manager prima di creare la pipeline.
