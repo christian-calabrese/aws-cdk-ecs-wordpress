@@ -1,6 +1,5 @@
 from aws_cdk import (
     aws_codebuild as codebuild,
-    aws_codecommit as codecommit,
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
     aws_iam as iam,
@@ -64,10 +63,12 @@ class PipelineStack(core.NestedStack):
                                                                 "phases": {
                                                                     "install": {
                                                                         "runtime-versions": {
-                                                                            "nodejs": 12
+                                                                            "nodejs": 12,
+                                                                            "python": "3.8"
                                                                         },
                                                                         "commands": [
-                                                                            'npm install aws-cdk',
+                                                                            "pip3 install -r requirements.txt"
+                                                                            "npm install aws-cdk",
                                                                         ]
                                                                     },
                                                                     "build": {
