@@ -3,7 +3,6 @@ from aws_cdk import (
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
     aws_iam as iam,
-    aws_secretsmanager as secretsmanager,
     core
 )
 
@@ -54,7 +53,7 @@ class PipelineStack(core.NestedStack):
                                                         environment=codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
                                                         environment_variables={
                                                             "ENVIRONMENT": codebuild.BuildEnvironmentVariable(
-                                                                params.name)
+                                                                value=params.name)
                                                         },
                                                         build_spec=codebuild.BuildSpec.from_object(
                                                             {
@@ -98,22 +97,22 @@ class PipelineStack(core.NestedStack):
                                                               output=self.source_output,
                                                               owner="AWS",
                                                               repo=params.git_repository_name,
-                                                              oauth_token=secretsmanager.Secret.from_secret_attributes(
-                                                                  self, "ImportedSecret",
-                                                                  secret_complete_arn=f"arn:aws:secretsmanager:{self.region}:{self.account}:secret:{params.github_token_secret_name}"),
+                                                              oauth_token=core.SecretValue.secrets_manager(
+                                                                  secret_id=params.github_token_secret_name,
+                                                                  json_field="github-token"),
                                                           )
                                                       ]
                                                   ),
-                                                  codepipeline.StageProps(self,
-                                                                          stage_name="BuildAndDeploy",
-                                                                          actions=[
-                                                                              codepipeline_actions.CodeBuildAction(
-                                                                                  action_name="BuildAndDeploy",
-                                                                                  project=self.codebuild_project,
-                                                                                  input=self.source_output
-                                                                              )
-                                                                          ]
-                                                                          )
+                                                  codepipeline.StageProps(
+                                                      stage_name="BuildAndDeploy",
+                                                      actions=[
+                                                          codepipeline_actions.CodeBuildAction(
+                                                              action_name="BuildAndDeploy",
+                                                              project=self.deploy_project,
+                                                              input=self.source_output
+                                                          )
+                                                      ]
+                                                  )
                                               ]
                                               )
 

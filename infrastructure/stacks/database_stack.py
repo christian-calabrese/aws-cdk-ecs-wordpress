@@ -30,9 +30,10 @@ class DatabaseStack(core.NestedStack):
                 self.max_capacity = rds_capacity_units[params.aurora.capacity.max]
             except KeyError:
                 raise (Exception(f"Maximum capacity must be in {list(rds_capacity_units.keys())}"))
+
             self.database = rds.ServerlessCluster(
                 self, "Wordpress-RDS-Aurora-Serverless",
-                engine=rds.DatabaseClusterEngine.AURORA_MYSQL,
+                engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_5_7_12),
                 default_database_name="wp-database",
                 vpc=vpc_stack.vpc,
                 scaling=rds.ServerlessScalingOptions(
@@ -43,19 +44,19 @@ class DatabaseStack(core.NestedStack):
                 deletion_protection=False,
                 backup_retention=core.Duration.days(params.aurora.get("backup_retention_days", 1)),
                 removal_policy=core.RemovalPolicy.SNAPSHOT,
-                vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType('PRIVATE')).subnets,
+                vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType('ISOLATED')).subnets,
                 storage_encryption_key=self.kms_key
             )
         else:
             self.database = rds.DatabaseCluster(
                 self, "Wordpress-RDS-Aurora",
-                engine=rds.DatabaseClusterEngine.AURORA_MYSQL,
+                engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_5_7_12),
                 cluster_identifier="Wordpress-RDS",
                 instances=params.aurora.get("az_number", 2),
                 default_database_name="wp-database",
                 instance_props=rds.InstanceProps(
                     vpc=vpc_stack.vpc,
-                    vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType('PRIVATE')).subnets,
+                    vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType('ISOLATED')).subnets,
                     allow_major_version_upgrade=False,
                     auto_minor_version_upgrade=True,
                     instance_type=ec2.InstanceType(instance_type_identifier=params.aurora.instance_type)
@@ -67,8 +68,19 @@ class DatabaseStack(core.NestedStack):
                     preferred_window="01:00-03:00"
                 ),
                 preferred_maintenance_window="sun03:00-sun05:00",
-                instance_identifier_base="FLWP-",
+                instance_identifier_base="Wordpress-RDS-",
                 deletion_protection=True if params.name == "prod" else False,
                 removal_policy=core.RemovalPolicy.SNAPSHOT,
+                backtrack_window=core.Duration.hours(params.aurora.get("backtrack_window_hours", 0)),
                 storage_encryption_key=self.kms_key
             )
+
+        self.bastion = ec2.BastionHostLinux(
+            self,
+            "Wordpress-RDS-Aurora-Bastion-Host",
+            vpc=vpc_stack.vpc,
+            instance_name="Wordpress-RDS-Aurora-Bastion-Host",
+            instance_type=ec2.InstanceType(instance_type_identifier="t3.nano")
+        )
+
+        self.database.connections.allow_default_port_from(self.bastion)

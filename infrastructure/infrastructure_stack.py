@@ -4,6 +4,7 @@ from aws_cdk import (
 
 from infrastructure.stacks.database_stack import DatabaseStack
 from infrastructure.stacks.fargate_stack import FargateStack
+from infrastructure.stacks.pipeline_stack import PipelineStack
 from infrastructure.stacks.vpc_stack import VpcStack
 
 
@@ -17,3 +18,4 @@ class InfrastructureStack(cdk.Stack):
         self.fargate_stack = FargateStack(scope=self, id="WordpressFargateStack", params=params,
                                           vpc_stack=self.vpc_stack,
                                           database_stack=self.database_stack)
+        self.pipeline_stack = PipelineStack(scope=self, id="WordpressPipelineStack", params=params)

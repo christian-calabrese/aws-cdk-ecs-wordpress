@@ -106,7 +106,7 @@ class FargateStack(core.NestedStack):
         scaling.scale_on_cpu_utilization(
             "Wordpress-ECS-Task",
             target_utilization_percent=75,
-            scale_in_cooldown=core.Duration.seconds(120),
+            scale_in_cooldown=core.Duration.seconds(30),
             scale_out_cooldown=core.Duration.seconds(30),
         )
 
@@ -132,4 +132,11 @@ class FargateStack(core.NestedStack):
             protocol=elbv2.ApplicationProtocol.HTTP,
             targets=[ecs_service],
             health_check=elbv2.HealthCheck(healthy_http_codes="200,301,302")
+        )
+
+        core.CfnOutput(
+            self,
+            'wp_alb_endpoint',
+            value=app_load_balancer.load_balancer_dns_name,
+            description="The application load balancer url"
         )

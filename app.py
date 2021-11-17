@@ -13,6 +13,7 @@ with open(f"infrastructure/parameters/{env_name}.json", "r") as f:
     params = json.loads(f.read(), object_hook=lambda d: Environment(**d))
 
 InfrastructureStack(app, "WordpressMainStack",
-                env=core.Environment(region="eu-west-1"), params=params)
-app.synth()
+                    env=core.Environment(region="eu-west-1"), params=params)
 
+core.Tags.of(InfrastructureStack).add("stack-name", "ChristianCalabreseWordpress")
+app.synth()
