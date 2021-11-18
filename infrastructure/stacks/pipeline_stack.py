@@ -1,8 +1,10 @@
+import json
 from aws_cdk import (
     aws_codebuild as codebuild,
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
     aws_iam as iam,
+    aws_secretsmanager as secretsmanager,
     core
 )
 
@@ -11,6 +13,13 @@ class PipelineStack(core.NestedStack):
     def __init__(self, scope: core.Construct, id: str, params,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        github_secret = secretsmanager.CfnSecret(
+            self,
+            "Wordpress-Secretsmanager-GitHub-Secret",
+            name=params.github_token_secret_name,
+            secret_string=json.dumps({"github_token": params.github_token})
+        )
         self.codebuild_policies = [
             iam.PolicyStatement(
                 actions=[
@@ -45,6 +54,13 @@ class PipelineStack(core.NestedStack):
                 ],
                 resources=['*'],
                 effect=iam.Effect.ALLOW
+            ),
+            iam.PolicyStatement(
+                actions=[
+                    'ecr:*'
+                ],
+                resources=['*'],
+                effect=iam.Effect.ALLOW
             )
         ]
 
@@ -53,20 +69,33 @@ class PipelineStack(core.NestedStack):
                                                         environment=codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
                                                         environment_variables={
                                                             "ENVIRONMENT": codebuild.BuildEnvironmentVariable(
-                                                                value=params.name)
+                                                                value=params.name),
+                                                            "IMAGE_REPO_NAME": codebuild.BuildEnvironmentVariable(
+                                                                value=params.fargate.container_image_name)
                                                         },
                                                         build_spec=codebuild.BuildSpec.from_object(
                                                             {
                                                                 "version": '0.2',
                                                                 "env": {},
                                                                 "phases": {
+                                                                    "pre_build": {
+                                                                        "commands": [
+                                                                            "echo Logging in to Amazon ECR...",
+                                                                            "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+                                                                        ]
+                                                                    },
                                                                     "install": {
                                                                         "runtime-versions": {
                                                                             "nodejs": 12,
                                                                             "python": "3.8"
                                                                         },
                                                                         "commands": [
-                                                                            "pip3 install -r requirements.txt"
+                                                                            "echo Build started on `date`",
+                                                                            "echo Building the Docker image...",
+                                                                            "docker build -t $IMAGE_REPO_NAME:latest .",
+                                                                            "docker tag $IMAGE_REPO_NAME:latest  $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest",
+                                                                            "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest",
+                                                                            "pip3 install -r requirements.txt",
                                                                             "npm install aws-cdk",
                                                                         ]
                                                                     },
@@ -99,7 +128,7 @@ class PipelineStack(core.NestedStack):
                                                               repo=params.git_repository_name,
                                                               oauth_token=core.SecretValue.secrets_manager(
                                                                   secret_id=params.github_token_secret_name,
-                                                                  json_field="github-token"),
+                                                                  json_field="github_token"),
                                                           )
                                                       ]
                                                   ),

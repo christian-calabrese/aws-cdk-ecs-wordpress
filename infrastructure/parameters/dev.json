@@ -11,12 +11,13 @@
     "serverless": true,
     "capacity": {
       "min": 1,
-      "max": 4
+      "max": 2
     },
     "auto_pause_sec": 300,
     "custom_kms_encrypted": true
   },
   "fargate": {
+    "container_image_name": "wordpress_ha_cc_fl",
     "min_capacity": 1,
     "max_capacity": 2,
     "spots": {

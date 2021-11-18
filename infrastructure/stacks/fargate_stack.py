@@ -46,12 +46,6 @@ class FargateStack(core.NestedStack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
         )
 
-        wordpress_image = ecr_assets.DockerImageAsset(
-            self, "Wordpress-ECR-Image",
-            directory=f"{os.path.dirname(__file__)}/../../images/wordpress",
-            file="Dockerfile",
-        )
-
         media_bucket = s3.Bucket(
             self, 'Wordpress-S3-Bucket',
             versioned=False,
@@ -63,8 +57,8 @@ class FargateStack(core.NestedStack):
         ecs_wordpress_container = ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
-                'PRIMARY_DB_URI': database_stack.database.cluster_endpoint.hostname,
-                'SECONDARY_DB_URI': database_stack.replica_database.cluster_endpoint.hostname if params.aurora.get(
+                'PRIMARY_DB_URI': database_stack.db_record.domain_name,
+                'SECONDARY_DB_URI': database_stack.db_replica_record.domain_name if params.aurora.get(
                     "has_replica", None) else "",
                 'MEDIA_S3_BUCKET': media_bucket.bucket_name,
                 'WORDPRESS_TABLE_PREFIX': 'wp_'
@@ -77,7 +71,7 @@ class FargateStack(core.NestedStack):
                 'DB_NAME':
                     ecs.Secret.from_secrets_manager(database_stack.database.secret, field="database_name"),
             },
-            image=ecs.ContainerImage.from_docker_image_asset(wordpress_image)
+            image=ecs.ContainerImage.from_registry(name=params.fargate.container_image_name)
         )
 
         ecs_wordpress_container.add_port_mappings(

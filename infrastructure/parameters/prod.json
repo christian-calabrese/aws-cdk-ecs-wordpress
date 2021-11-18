@@ -15,6 +15,7 @@
     "backtrack_window_hours": 6
   },
   "fargate": {
+    "container_image_name": "wordpress_ha_cc_fl",
     "min_capacity": 2,
     "max_capacity": 10
   }

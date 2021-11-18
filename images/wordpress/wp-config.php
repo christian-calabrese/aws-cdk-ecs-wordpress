@@ -1,22 +1,3 @@
-$wpdb->add_database(array(
- 'host'	=> getenv('PRIMARY_DB_URI'),
- 'user'	=> getenv('DB_USER'),
- 'password'	=> getenv('DB_PWD'),
-  'name' 	=> getenv('DB_NAME'),
-));
-
-$sec_db_uri = getenv('SECONDARY_DB_URI')
-if($sec_db_uri != "") {
-    $wpdb->add_database(array(
-     'host' 	=> $sec_db_uri,
-     'user'	=> getenv('DB_USER'),
-     'password'	=> getenv('DB_PWD'),
-      'name' 	=> getenv('DB_NAME'),
-     'write'	=> 0,
-     'read'	=> 1,
-    ));
-}
-
 define( 'AS3CF_SETTINGS', serialize( array(
     // Storage Provider ('aws', 'do', 'gcp')
     'provider' => 'aws',

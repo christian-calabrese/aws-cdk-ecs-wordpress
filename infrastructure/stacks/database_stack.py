@@ -1,8 +1,9 @@
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_kms as kms,
-    aws_rds as rds,
     aws_logs as logs,
+    aws_rds as rds,
+    aws_route53 as route53,
     core
 )
 
@@ -84,3 +85,27 @@ class DatabaseStack(core.NestedStack):
         )
 
         self.database.connections.allow_default_port_from(self.bastion)
+
+        hosted_zone = route53.HostedZone(
+            self,
+            'Wordpress-Route53-HostedZone',
+            vpcs=[vpc_stack.vpc],
+            zone_name='Wordpress-Route53-HostedZone',
+        )
+
+        self.db_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Record', zone=hosted_zone,
+                                             record_name='wordpress.route53.rds',
+                                             domain_name='wordpress.route53.rds'
+                                             )
+        if params.aurora.get("has_replica", None):
+            self.db_replica_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Replica-Record',
+                                                         zone=hosted_zone,
+                                                         record_name='wordpress.route53.rds.replica',
+                                                         domain_name='wordpress.route53.rds.replica'
+                                                         )
+        else:
+            self.db_replica_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Replica-Record',
+                                                         zone=hosted_zone,
+                                                         record_name='wordpress.route53.rds.replica',
+                                                         domain_name='wordpress.route53.rds.replica'
+                                                         )
