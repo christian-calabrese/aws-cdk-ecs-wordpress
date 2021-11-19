@@ -2,18 +2,22 @@ import os
 from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
     aws_ec2 as ec2,
+    aws_ecr as ecr,
     aws_ecs as ecs,
     aws_efs as efs,
-    aws_ecr_assets as ecr_assets,
     aws_s3 as s3,
     core,
 )
 
+from infrastructure.stacks.database_stack import DatabaseStack
+from infrastructure.stacks.pipeline_stack import PipelineStack
+from infrastructure.stacks.vpc_stack import VpcStack
+
 
 class FargateStack(core.NestedStack):
 
-    def __init__(self, scope: core.Construct, id: str, params, vpc_stack: core.Stack, database_stack: core.Stack,
-                 **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, params, vpc_stack: VpcStack, database_stack: DatabaseStack,
+                 pipeline_stack: PipelineStack, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         ecs_efs = efs.FileSystem(
@@ -58,6 +62,8 @@ class FargateStack(core.NestedStack):
             stream_prefix="ccwp-"
         )
 
+        docker_image = ecs.EcrImage(repository=pipeline_stack.ecr_repository, tag_or_digest="latest")
+
         ecs_wordpress_container = ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
@@ -69,13 +75,13 @@ class FargateStack(core.NestedStack):
             },
             secrets={
                 'DB_USER':
-                    ecs.Secret.from_secrets_manager(database_stack.database.secret, field="database_username"),
+                    ecs.Secret.from_secrets_manager(database_stack.database.secret, field="username"),
                 'DB_PWD':
-                    ecs.Secret.from_secrets_manager(database_stack.database.secret, field="database_password"),
+                    ecs.Secret.from_secrets_manager(database_stack.database.secret, field="password"),
                 'DB_NAME':
-                    ecs.Secret.from_secrets_manager(database_stack.database.secret, field="database_name"),
+                    ecs.Secret.from_secrets_manager(database_stack.database.secret, field="dbname"),
             },
-            image=ecs.ContainerImage.from_registry(name=params.fargate.container_image_name),
+            image=docker_image,
             logging=ecs_wordpress_logging
         )
 
