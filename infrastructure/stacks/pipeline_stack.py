@@ -75,7 +75,10 @@ class PipelineStack(core.NestedStack):
 
         self.deploy_project = codebuild.PipelineProject(self,
                                                         "Wordpress-CodeBuild-Project",
-                                                        environment=codebuild.LinuxBuildImage.AMAZON_LINUX_2_3,
+                                                        environment=codebuild.BuildEnvironment(
+                                                            privileged=True,
+                                                            build_image=codebuild.LinuxBuildImage.STANDARD_5_0
+                                                        ),
                                                         environment_variables={
                                                             "ENVIRONMENT": codebuild.BuildEnvironmentVariable(
                                                                 value=params.name),
