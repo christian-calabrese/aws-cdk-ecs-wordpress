@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
     aws_codestarconnections as codestar,
+    aws_ecr as ecr,
     aws_iam as iam,
     aws_secretsmanager as secretsmanager,
     core
@@ -14,6 +15,12 @@ class PipelineStack(core.NestedStack):
     def __init__(self, scope: core.Construct, id: str, params,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        ecr_repository = ecr.Repository(
+            self,
+            "Wordpress-ECR-Repository",
+            repository_name=params.fargate.container_image_name
+        )
 
         github_secret = secretsmanager.CfnSecret(
             self,
@@ -83,7 +90,14 @@ class PipelineStack(core.NestedStack):
                                                             "ENVIRONMENT": codebuild.BuildEnvironmentVariable(
                                                                 value=params.name),
                                                             "IMAGE_REPO_NAME": codebuild.BuildEnvironmentVariable(
-                                                                value=params.fargate.container_image_name)
+                                                                value=ecr_repository.repository_name),
+                                                            "PRIMARY_DB_URI": codebuild.BuildEnvironmentVariable(
+                                                                value='wordpress.route53.rds'),
+                                                            "SECONDARY_DB_URI": codebuild.BuildEnvironmentVariable(
+                                                                'wordpress.route53.rds.replica' if params.aurora.get(
+                                                                    "has_replica", None) else ""),
+                                                            "WORDPRESS_TABLE_PREFIX": codebuild.BuildEnvironmentVariable(
+                                                                'wp_')
                                                         },
                                                         build_spec=codebuild.BuildSpec.from_object(
                                                             {
