@@ -79,7 +79,8 @@ class PipelineStack(core.NestedStack):
                 effect=iam.Effect.ALLOW
             )
         ]
-
+        secondary_db_uri = 'wordpress.route53.rds.replica' if params.aurora.get(
+                                                                    "has_replica", None) else ""
         self.deploy_project = codebuild.PipelineProject(self,
                                                         "Wordpress-CodeBuild-Project",
                                                         environment=codebuild.BuildEnvironment(
@@ -94,10 +95,9 @@ class PipelineStack(core.NestedStack):
                                                             "PRIMARY_DB_URI": codebuild.BuildEnvironmentVariable(
                                                                 value='wordpress.route53.rds'),
                                                             "SECONDARY_DB_URI": codebuild.BuildEnvironmentVariable(
-                                                                'wordpress.route53.rds.replica' if params.aurora.get(
-                                                                    "has_replica", None) else ""),
+                                                                value=secondary_db_uri),
                                                             "WORDPRESS_TABLE_PREFIX": codebuild.BuildEnvironmentVariable(
-                                                                'wp_')
+                                                                value='wp_')
                                                         },
                                                         build_spec=codebuild.BuildSpec.from_object(
                                                             {
@@ -151,7 +151,7 @@ class PipelineStack(core.NestedStack):
                                                           codepipeline_actions.GitHubSourceAction(
                                                               action_name="GitHubSource",
                                                               output=self.source_output,
-                                                              owner="AWS",
+                                                              owner=params.github_repository_owner,
                                                               branch=params.branch,
                                                               trigger=codepipeline_actions.GitHubTrigger.POLL,
                                                               repo=params.git_repository_name,

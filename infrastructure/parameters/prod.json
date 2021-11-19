@@ -4,6 +4,7 @@
   "github_token_secret_name": "wordpress_secret_github_token",
   "codestar_connection_id": "a8bf7190-4ce8-4a08-bd8f-6709607c6d15",
   "branch": "main",
+  "github_repository_owner": "christian-calabrese",
   "vpc": {
     "az_number": 3,
     "nats_number": 3

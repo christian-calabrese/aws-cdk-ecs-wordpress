@@ -1,4 +1,4 @@
-FROM wordpress
+FROM public.ecr.aws/bitnami/wordpress:latest
 
 COPY wp-config.php /usr/src/wordpress/
 COPY db-config.php /usr/src/wordpress/
