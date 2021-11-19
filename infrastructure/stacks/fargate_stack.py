@@ -2,6 +2,7 @@ import os
 from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
     aws_ec2 as ec2,
+    aws_ecr_assets as ecr_assets,
     aws_ecs as ecs,
     aws_efs as efs,
     aws_iam as iam,
@@ -35,8 +36,8 @@ class FargateStack(core.NestedStack):
         )
 
         self.ecs_wordpress_task = ecs.FargateTaskDefinition(self, "Wordpress-ECS-Task", volumes=[wordpress_volume],
-                                                       cpu=params.fargate.cpu,
-                                                       memory_limit_mib=params.fargate.memory_limit)
+                                                            cpu=params.fargate.cpu,
+                                                            memory_limit_mib=params.fargate.memory_limit)
 
         ecs_cluster = ecs.Cluster(
             self, 'Wordpress-ECS-Cluster',
@@ -57,14 +58,19 @@ class FargateStack(core.NestedStack):
             versioned=False,
             bucket_name='cc.wp-media.bucket',
             encryption=s3.BucketEncryption.S3_MANAGED,
-            removal_policy=core.RemovalPolicy.RETAIN
+            removal_policy=core.RemovalPolicy.RETAIN if params.name == "prod" else core.RemovalPolicy.DESTROY
         )
 
         ecs_wordpress_logging = ecs.AwsLogDriver(
             stream_prefix="ccwp-"
         )
 
-        docker_image = ecs.EcrImage(repository=pipeline_stack.ecr_repository, tag_or_digest="latest")
+        docker_image = ecr_assets.DockerImageAsset(
+            self, "Wordpress-ECR-Image",
+            directory=f"{os.path.dirname(__file__)}/../../images/wordpress",
+            file="Dockerfile",
+            repository_name=params.fargate.container_image_name
+        )
 
         ecs_wordpress_container = self.ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
@@ -83,7 +89,7 @@ class FargateStack(core.NestedStack):
                 'DB_NAME':
                     ecs.Secret.from_secrets_manager(database_stack.database.secret, field="dbname"),
             },
-            image=docker_image,
+            image=ecs.ContainerImage.from_docker_image_asset(docker_image),
             logging=ecs_wordpress_logging
         )
 
