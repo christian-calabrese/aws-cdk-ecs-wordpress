@@ -124,20 +124,20 @@ if ($configExtra = getenv_docker('WORDPRESS_CONFIG_EXTRA', '')) {
 
 define( 'AS3CF_SETTINGS', serialize( array(
     // Storage Provider ('aws', 'do', 'gcp')
-    'provider' => 'aws',
+    //'provider' => 'aws',
     // Access Key ID for Storage Provider (aws and do only, replace '*')
     'access-key-id' => '********************',
     // Secret Access Key for Storage Providers (aws and do only, replace '*')
-    'secret-access-key' => '**************************************',
+    //'secret-access-key' => '**************************************',
     // GCP Key File Path (gcp only, absolute file path, not URL)
     // Make sure hidden from public website, i.e. outside site's document root.
-    'key-file-path' => '/path/to/key/file.json',
+    //'key-file-path' => '/path/to/key/file.json',
     // Use IAM Roles on Amazon Elastic Compute Cloud (EC2) or Google Compute Engine (GCE)
     'use-server-roles' => true,
     // Bucket to upload files to
     'bucket' => getenv('MEDIA_S3_BUCKET'),
     // Bucket region (e.g. 'us-west-1' - leave blank for default region)
-    'region' => '',
+    'region' => 'eu-west-1',
     // Automatically copy files to bucket on upload
     'copy-to-s3' => true,
     // Enable object prefix, useful if you use your bucket for other files
@@ -149,9 +149,9 @@ define( 'AS3CF_SETTINGS', serialize( array(
     // Append a timestamped folder to path of files offloaded to bucket to avoid filename clashes and bust CDN cache if updated
     'object-versioning' => true,
     // Delivery Provider ('storage', 'aws', 'do', 'gcp', 'cloudflare', 'keycdn', 'stackpath', 'other')
-    'delivery-provider' => 'storage',
+    //'delivery-provider' => 'storage',
     // Custom name to display when using 'other' Delivery Provider
-    'delivery-provider-name' => 'Akamai',
+    //'delivery-provider-name' => 'Akamai',
     // Rewrite file URLs to bucket
     'serve-from-s3' => true,
     // Use a custom domain (CNAME), not supported when using 'storage' Delivery Provider
