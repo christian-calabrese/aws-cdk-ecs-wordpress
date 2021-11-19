@@ -16,7 +16,7 @@ class PipelineStack(core.NestedStack):
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        ecr_repository = ecr.Repository(
+        self.ecr_repository = ecr.Repository(
             self,
             "Wordpress-ECR-Repository",
             repository_name=params.fargate.container_image_name
@@ -91,7 +91,7 @@ class PipelineStack(core.NestedStack):
                                                             "ENVIRONMENT": codebuild.BuildEnvironmentVariable(
                                                                 value=params.name),
                                                             "IMAGE_REPO_NAME": codebuild.BuildEnvironmentVariable(
-                                                                value=ecr_repository.repository_name),
+                                                                value=self.ecr_repository.repository_name),
                                                             "PRIMARY_DB_URI": codebuild.BuildEnvironmentVariable(
                                                                 value='wordpress.route53.rds'),
                                                             "SECONDARY_DB_URI": codebuild.BuildEnvironmentVariable(

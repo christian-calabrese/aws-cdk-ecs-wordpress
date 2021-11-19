@@ -2,9 +2,9 @@ import os
 from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
     aws_ec2 as ec2,
-    aws_ecr as ecr,
     aws_ecs as ecs,
     aws_efs as efs,
+    aws_iam as iam,
     aws_s3 as s3,
     core,
 )
@@ -34,7 +34,7 @@ class FargateStack(core.NestedStack):
             )
         )
 
-        ecs_wordpress_task = ecs.FargateTaskDefinition(self, "Wordpress-ECS-Task", volumes=[wordpress_volume],
+        self.ecs_wordpress_task = ecs.FargateTaskDefinition(self, "Wordpress-ECS-Task", volumes=[wordpress_volume],
                                                        cpu=params.fargate.cpu,
                                                        memory_limit_mib=params.fargate.memory_limit)
 
@@ -46,7 +46,7 @@ class FargateStack(core.NestedStack):
 
         ecs_service = ecs.FargateService(
             self, "Wordpress-ECS-Service",
-            task_definition=ecs_wordpress_task,
+            task_definition=self.ecs_wordpress_task,
             platform_version=ecs.FargatePlatformVersion.VERSION1_4,
             cluster=ecs_cluster,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
@@ -66,7 +66,7 @@ class FargateStack(core.NestedStack):
 
         docker_image = ecs.EcrImage(repository=pipeline_stack.ecr_repository, tag_or_digest="latest")
 
-        ecs_wordpress_container = ecs_wordpress_task.add_container(
+        ecs_wordpress_container = self.ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
                 'PRIMARY_DB_URI': 'wordpress.route53.rds',
@@ -91,8 +91,8 @@ class FargateStack(core.NestedStack):
             ecs.PortMapping(container_port=80)
         )
 
-        media_bucket.grant_read_write(ecs_wordpress_task.task_role)
-        media_bucket.grant_delete(ecs_wordpress_task.task_role)
+        media_bucket.grant_read_write(self.ecs_wordpress_task.task_role)
+        media_bucket.grant_delete(self.ecs_wordpress_task.task_role)
 
         ecs_wordpress_volume_mount_point = ecs.MountPoint(
             read_only=True,
@@ -156,6 +156,23 @@ class FargateStack(core.NestedStack):
             targets=[ecs_service],
             health_check=elbv2.HealthCheck(healthy_http_codes="200,301,302")
         )
+
+        self.ecs_wordpress_task.task_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "secretsmanager:GetResourcePolicy",
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret",
+                    "secretsmanager:ListSecretVersionIds"
+                ],
+                resources=[
+                    database_stack.database.secret.secret_arn
+                ],
+                effect=iam.Effect.ALLOW
+            )
+        )
+
+        database_stack.database.secret.grant_read(self.ecs_wordpress_task.task_role)
 
         core.CfnOutput(
             self,
