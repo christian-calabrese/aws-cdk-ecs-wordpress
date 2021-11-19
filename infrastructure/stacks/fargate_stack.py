@@ -57,8 +57,8 @@ class FargateStack(core.NestedStack):
         ecs_wordpress_container = ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
-                'PRIMARY_DB_URI': database_stack.db_record.domain_name,
-                'SECONDARY_DB_URI': database_stack.db_replica_record.domain_name if params.aurora.get(
+                'PRIMARY_DB_URI': 'wordpress.route53.rds',
+                'SECONDARY_DB_URI': 'wordpress.route53.rds.replica' if params.aurora.get(
                     "has_replica", None) else "",
                 'MEDIA_S3_BUCKET': media_bucket.bucket_name,
                 'WORDPRESS_TABLE_PREFIX': 'wp_'
