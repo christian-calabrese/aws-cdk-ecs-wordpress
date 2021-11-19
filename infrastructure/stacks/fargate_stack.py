@@ -54,6 +54,10 @@ class FargateStack(core.NestedStack):
             removal_policy=core.RemovalPolicy.RETAIN
         )
 
+        ecs_wordpress_logging = ecs.AwsLogDriver(
+            stream_prefix="ccwp-"
+        )
+
         ecs_wordpress_container = ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
@@ -71,7 +75,8 @@ class FargateStack(core.NestedStack):
                 'DB_NAME':
                     ecs.Secret.from_secrets_manager(database_stack.database.secret, field="database_name"),
             },
-            image=ecs.ContainerImage.from_registry(name=params.fargate.container_image_name)
+            image=ecs.ContainerImage.from_registry(name=params.fargate.container_image_name),
+            logging=ecs_wordpress_logging
         )
 
         ecs_wordpress_container.add_port_mappings(
