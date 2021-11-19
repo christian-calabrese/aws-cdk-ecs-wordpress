@@ -101,6 +101,7 @@ class PipelineStack(core.NestedStack):
                                                                         "commands": [
                                                                             "echo Build started on `date`",
                                                                             "echo Building the Docker image...",
+                                                                            "cd images/wordpress",
                                                                             "docker build -t $IMAGE_REPO_NAME:latest .",
                                                                             "docker tag $IMAGE_REPO_NAME:latest  $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest",
                                                                             "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest",
