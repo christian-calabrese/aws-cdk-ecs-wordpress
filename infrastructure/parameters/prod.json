@@ -18,6 +18,8 @@
   },
   "fargate": {
     "container_image_name": "wp_ha_cc_fl",
+    "cpu": 512,
+    "memory_limit": 1024,
     "min_capacity": 2,
     "max_capacity": 10
   }

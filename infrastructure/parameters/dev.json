@@ -22,6 +22,8 @@
     "container_image_name": "wp_ha_cc_fl",
     "min_capacity": 1,
     "max_capacity": 2,
+    "cpu": 512,
+    "memory_limit": 1024,
     "spots": {
       "enabled": true,
       "spot_weight": 4,

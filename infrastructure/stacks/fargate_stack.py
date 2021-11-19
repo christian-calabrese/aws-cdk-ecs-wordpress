@@ -34,7 +34,9 @@ class FargateStack(core.NestedStack):
             )
         )
 
-        ecs_wordpress_task = ecs.FargateTaskDefinition(self, "Wordpress-ECS-Task", volumes=[wordpress_volume])
+        ecs_wordpress_task = ecs.FargateTaskDefinition(self, "Wordpress-ECS-Task", volumes=[wordpress_volume],
+                                                       cpu=params.fargate.cpu,
+                                                       memory_limit_mib=params.fargate.memory_limit)
 
         ecs_cluster = ecs.Cluster(
             self, 'Wordpress-ECS-Cluster',
