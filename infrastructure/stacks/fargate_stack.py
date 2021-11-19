@@ -49,7 +49,7 @@ class FargateStack(core.NestedStack):
         media_bucket = s3.Bucket(
             self, 'Wordpress-S3-Bucket',
             versioned=False,
-            bucket_name='flowing.wp-media.bucket',
+            bucket_name='cc.wp-media.bucket',
             encryption=s3.BucketEncryption.S3_MANAGED,
             removal_policy=core.RemovalPolicy.RETAIN
         )

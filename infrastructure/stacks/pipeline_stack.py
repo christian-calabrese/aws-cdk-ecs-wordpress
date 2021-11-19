@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_codebuild as codebuild,
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
+    aws_codestarconnections as codestar,
     aws_iam as iam,
     aws_secretsmanager as secretsmanager,
     core
@@ -20,6 +21,14 @@ class PipelineStack(core.NestedStack):
             name=params.github_token_secret_name,
             secret_string=json.dumps({"github_token": params.github_token})
         )
+
+        self.codestar_connection = codestar.CfnConnection(
+            self,
+            "Wordpress-Codestar-GitHub-Connection",
+            connection_name="Wordpress-Codestar-Connection",
+            provider_type="GitHub"
+        )
+
         self.codebuild_policies = [
             iam.PolicyStatement(
                 actions=[
@@ -125,6 +134,8 @@ class PipelineStack(core.NestedStack):
                                                               action_name="GitHubSource",
                                                               output=self.source_output,
                                                               owner="AWS",
+                                                              branch=params.branch,
+                                                              trigger=codepipeline_actions.GitHubTrigger.POLL,
                                                               repo=params.git_repository_name,
                                                               oauth_token=core.SecretValue.secrets_manager(
                                                                   secret_id=github_secret.name,
@@ -151,7 +162,7 @@ class PipelineStack(core.NestedStack):
                     'codestar-connections:UseConnection'
                 ],
                 resources=[
-                    f"arn:aws:codestar-connections:{self.region}:{self.account}:connection/{params.codestar_connection_id}"
+                    self.codestar_connection.attr_connection_arn
                 ],
                 effect=iam.Effect.ALLOW
             )

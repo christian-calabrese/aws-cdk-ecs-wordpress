@@ -3,6 +3,7 @@
   "git_repository_name": "wordpress_ha_infrastructure",
   "github_token_secret_name": "wordpress_secret_github_token",
   "codestar_connection_id": "a8bf7190-4ce8-4a08-bd8f-6709607c6d15",
+  "branch": "develop",
   "vpc": {
     "az_number": 3,
     "nats_number": 1
@@ -14,7 +15,7 @@
       "max": 2
     },
     "auto_pause_sec": 300,
-    "custom_kms_encrypted": true
+    "custom_kms_encrypted": false
   },
   "fargate": {
     "container_image_name": "wordpress_ha_cc_fl",

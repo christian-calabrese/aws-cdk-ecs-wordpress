@@ -35,7 +35,7 @@ class DatabaseStack(core.NestedStack):
             self.database = rds.ServerlessCluster(
                 self, "Wordpress-RDS-Aurora-Serverless",
                 engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_5_7_12),
-                default_database_name="wp-database",
+                default_database_name="wpdatabasecc",
                 vpc=vpc_stack.vpc,
                 scaling=rds.ServerlessScalingOptions(
                     auto_pause=core.Duration.seconds(params.aurora.get("auto_pause_sec", 0)),
@@ -54,7 +54,7 @@ class DatabaseStack(core.NestedStack):
                 engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_5_7_12),
                 cluster_identifier="Wordpress-RDS",
                 instances=params.aurora.get("az_number", 2),
-                default_database_name="wp-database",
+                default_database_name="wpdatabasecc",
                 instance_props=rds.InstanceProps(
                     vpc=vpc_stack.vpc,
                     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType('ISOLATED')).subnets,
@@ -95,17 +95,17 @@ class DatabaseStack(core.NestedStack):
 
         self.db_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Record', zone=hosted_zone,
                                              record_name='wordpress.route53.rds',
-                                             domain_name='wordpress.route53.rds'
+                                             domain_name=self.database.cluster_endpoint.hostname
                                              )
         if params.aurora.get("has_replica", None):
             self.db_replica_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Replica-Record',
                                                          zone=hosted_zone,
                                                          record_name='wordpress.route53.rds.replica',
-                                                         domain_name='wordpress.route53.rds.replica'
+                                                         domain_name=self.database.cluster_read_endpoint.hostname
                                                          )
         else:
             self.db_replica_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Replica-Record',
                                                          zone=hosted_zone,
                                                          record_name='wordpress.route53.rds.replica',
-                                                         domain_name='wordpress.route53.rds.replica'
+                                                         domain_name=self.database.cluster_endpoint.hostname
                                                          )
