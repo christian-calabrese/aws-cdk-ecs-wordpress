@@ -178,6 +178,42 @@ class FargateStack(core.NestedStack):
             )
         )
 
+        self.ecs_wordpress_task.task_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "ecs:StartTelemetrySession"
+                ],
+                resources=[
+                    "*"
+                ],
+                effect=iam.Effect.ALLOW
+            )
+        )
+
+        self.ecs_wordpress_task.task_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:ListBucket"
+                ],
+                resources=[
+                    media_bucket.bucket_arn
+                ],
+                effect=iam.Effect.ALLOW
+            )
+        )
+
+        self.ecs_wordpress_task.task_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:*Object"
+                ],
+                resources=[
+                    f"{media_bucket.bucket_arn}/*"
+                ],
+                effect=iam.Effect.ALLOW
+            )
+        )
+
         database_stack.database.secret.grant_read(self.ecs_wordpress_task.task_role)
 
         core.CfnOutput(

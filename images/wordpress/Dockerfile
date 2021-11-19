@@ -8,5 +8,8 @@ RUN  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cl
 
 WORKDIR /usr/src/wordpress/
 
-CMD sh /usr/src/wordpress/wordpress_prepare.sh
+CMD wp --allow-root core update
+CMD wp --allow-root plugin install amazon-s3-and-cloudfront --activate
+CMD wp --allow-root plugin install hyperdb --activate
+
 WORKDIR /var/www/html
