@@ -127,7 +127,7 @@ class PipelineStack(core.NestedStack):
                                                               owner="AWS",
                                                               repo=params.git_repository_name,
                                                               oauth_token=core.SecretValue.secrets_manager(
-                                                                  secret_id=params.github_token_secret_name,
+                                                                  secret_id=github_secret.name,
                                                                   json_field="github_token"),
                                                           )
                                                       ]
