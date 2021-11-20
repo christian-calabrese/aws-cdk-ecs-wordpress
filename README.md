@@ -89,7 +89,7 @@ Essa è composta da due fasi:
 Il vantaggio di utilizzare CDK è infatti la possibilità di mantenere una forte sinergia tra l'infrastruttura ed il codice.
 Nel caso di questo progetto, ad esempio, il Dockerfile di Wordpress per la creazione dei container e la definizione della loro infrastruttura sono inclusi nello stesso repository,
 rendendo impossibile il deploy disgiunto delle due parti.
-Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzando lo stesso linguaggio di programmazione.
+Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzare lo stesso linguaggio di programmazione.
 
 ### Possibili ottimizzazioni:
 Esistono molti spiragli di ottimizzazione e miglioramento del progetto.
