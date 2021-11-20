@@ -86,26 +86,26 @@ class DatabaseStack(core.NestedStack):
 
         self.database.connections.allow_default_port_from(self.bastion)
 
-        hosted_zone = route53.HostedZone(
+        self.hosted_zone = route53.PrivateHostedZone(
             self,
             'Wordpress-Route53-HostedZone',
-            vpcs=[vpc_stack.vpc],
-            zone_name='Wordpress-Route53-HostedZone',
+            zone_name='wp.cc.com',
+            vpc=vpc_stack.vpc
         )
 
-        self.db_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Record', zone=hosted_zone,
-                                             record_name='wordpress.route53.rds',
+        self.db_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Record', zone=self.hosted_zone,
+                                             record_name='rds',
                                              domain_name=self.database.cluster_endpoint.hostname
                                              )
         if params.aurora.get("has_replica", None):
             self.db_replica_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Replica-Record',
-                                                         zone=hosted_zone,
-                                                         record_name='wordpress.route53.rds.replica',
+                                                         zone=self.hosted_zone,
+                                                         record_name='rds.replica',
                                                          domain_name=self.database.cluster_read_endpoint.hostname
                                                          )
         else:
             self.db_replica_record = route53.CnameRecord(self, id='Wordpress-Route53-RDS-Replica-Record',
-                                                         zone=hosted_zone,
-                                                         record_name='wordpress.route53.rds.replica',
+                                                         zone=self.hosted_zone,
+                                                         record_name='rds.replica',
                                                          domain_name=self.database.cluster_endpoint.hostname
                                                          )

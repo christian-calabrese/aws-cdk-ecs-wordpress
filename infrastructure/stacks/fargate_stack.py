@@ -75,18 +75,19 @@ class FargateStack(core.NestedStack):
         ecs_wordpress_container = self.ecs_wordpress_task.add_container(
             "Wordpress-ECS-Task",
             environment={
-                'PRIMARY_DB_URI': database_stack.db_record.hostname,
-                'SECONDARY_DB_URI': database_stack.db_replica_record.hostname if params.aurora.get(
+                'PRIMARY_DB_URI': f"{database_stack.db_record.domain_name}:{database_stack.database.cluster_endpoint.port}",
+                'SECONDARY_DB_URI': f"{database_stack.db_replica_record.domain_name}:{database_stack.database.cluster_endpoint.port}" if params.aurora.get(
                     "has_replica", None) else "",
                 'MEDIA_S3_BUCKET': media_bucket.bucket_name,
-                'WORDPRESS_TABLE_PREFIX': 'wp_'
+                'WORDPRESS_TABLE_PREFIX': 'wp_',
+                'WORDPRESS_DB_HOST': database_stack.db_record.domain_name
             },
             secrets={
-                'DB_USER':
+                'WORDPRESS_DB_USER':
                     ecs.Secret.from_secrets_manager(database_stack.database.secret, field="username"),
-                'DB_PWD':
+                'WORDPRESS_DB_PASSWORD':
                     ecs.Secret.from_secrets_manager(database_stack.database.secret, field="password"),
-                'DB_NAME':
+                'WORDPRESS_DB_NAME':
                     ecs.Secret.from_secrets_manager(database_stack.database.secret, field="dbname"),
             },
             image=ecs.ContainerImage.from_docker_image_asset(docker_image),
@@ -136,6 +137,7 @@ class FargateStack(core.NestedStack):
                 {
                     "capacityProvider": "FARGATE",
                     "weight": params.fargate.spots.normal_weight,
+                    "base": 1
                 },
             ]
 
@@ -215,7 +217,11 @@ class FargateStack(core.NestedStack):
         )
 
         database_stack.database.secret.grant_read(self.ecs_wordpress_task.task_role)
-
+        database_stack.database.connections.allow_from(ecs_cluster,
+                                                       ec2.Port(from_port=database_stack.database.cluster_endpoint.port,
+                                                                to_port=database_stack.database.cluster_endpoint.port,
+                                                                protocol=ec2.Protocol(ec2.Protocol.TCP),
+                                                                string_representation="fromECSCluster"))
         core.CfnOutput(
             self,
             'wp_alb_endpoint',
