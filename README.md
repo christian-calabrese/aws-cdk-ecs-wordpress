@@ -89,7 +89,7 @@ Essa è composta da due fasi:
 Il vantaggio di utilizzare CDK è infatti la possibilità di mantenere una forte sinergia tra l'infrastruttura ed il codice.
 Nel caso di questo progetto, ad esempio, il Dockerfile di Wordpress per la creazione dei container e la definizione della loro infrastruttura sono inclusi nello stesso repository,
 rendendo impossibile il deploy disgiunto delle due parti.
-Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzando lo stesso linguaggio di programmazione.
+Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzare lo stesso linguaggio di programmazione.
 
 (&ast;) Per far creare la codestar connection tra CodePipeline GitHub, è necessario aver creato un personal access token da salvare in secrets manager.
 Lo IaC è implementato in modo tale da prelevare tale token dal file `/infrastructure/parameters/uncommitted/.env.json`. Come si nota dalla path, questo file non è committato su git, perciò è possibile utilizzare il file `example.env.json` come base.
