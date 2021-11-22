@@ -83,13 +83,16 @@ Inoltre, è stato creato un bucket S3 che contiene gli asset statici di Wordpres
 ### CI/CD:
 Per soddisfare i requisiti di CI/CD, è stato scelto di creare una semplice pipeline tramite il servizio CodePipeline.
 Essa è composta da due fasi:
-   1. Source: il codice di questo repository è prelevato automaticamente da GitHub ad ogni commit. Per permettere l'integrazione tra CodePipeline e GitHub è necessario utilizzare un token oAuth salvato in un secret su secrets manager prima di creare la pipeline.
+   1. Source: il codice di questo repository è prelevato automaticamente da GitHub (*) ad ogni commit. Per permettere l'integrazione tra CodePipeline e GitHub è necessario utilizzare un token oAuth salvato in un secret su secrets manager prima di creare la pipeline.
    2. Build and deploy: questa fase è gestita tramite container CodeBuild su base Amazon Linux 2. Al suo interno sono installate le runtime di NodeJs e Python. Il primo è necessario per l'utilizzo di CDK ed il secondo per l'interpretazione dello IaC di questo repository. 
    
 Il vantaggio di utilizzare CDK è infatti la possibilità di mantenere una forte sinergia tra l'infrastruttura ed il codice.
 Nel caso di questo progetto, ad esempio, il Dockerfile di Wordpress per la creazione dei container e la definizione della loro infrastruttura sono inclusi nello stesso repository,
 rendendo impossibile il deploy disgiunto delle due parti.
 Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzando lo stesso linguaggio di programmazione.
+
+(&ast;) Per far creare la codestar connection tra CodePipeline GitHub, è necessario aver creato un personal access token da salvare in secrets manager.
+Lo IaC è implementato in modo tale da prelevare tale token dal file `/infrastructure/parameters/uncommitted/.env.json`. Come si nota dalla path, questo file non è committato su git, perciò è possibile utilizzare il file `example.env.json` come base.
 
 ### Possibili ottimizzazioni:
 Esistono molti spiragli di ottimizzazione e miglioramento del progetto.
