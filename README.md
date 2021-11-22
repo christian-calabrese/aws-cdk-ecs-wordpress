@@ -88,7 +88,7 @@ Essa è composta da due fasi:
    
 Il vantaggio di utilizzare CDK è infatti la possibilità di mantenere una forte sinergia tra l'infrastruttura ed il codice.
 Nel caso di questo progetto, ad esempio, il Dockerfile di Wordpress per la creazione dei container e la definizione della loro infrastruttura sono inclusi nello stesso repository,
-rendendo impossibile il deploy disgiunto delle due parti.
+rendendo impossibile il deploy disgiunto delle due parti. Infatti, è possibile effettuare il push verso ECR delle immagini docker in concomitanza al comando `cdk deploy`.
 Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzare lo stesso linguaggio di programmazione.
 
 (&ast;) Per far creare la codestar connection tra CodePipeline e GitHub, è necessario aver creato un personal access token da salvare in secrets manager nel secret chiamato `wordpress_secret_github_token`.
