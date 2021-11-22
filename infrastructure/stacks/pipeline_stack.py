@@ -4,7 +4,6 @@ from aws_cdk import (
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as codepipeline_actions,
     aws_codestarconnections as codestar,
-    aws_ecr as ecr,
     aws_iam as iam,
     aws_secretsmanager as secretsmanager,
     core
@@ -15,12 +14,6 @@ class PipelineStack(core.NestedStack):
     def __init__(self, scope: core.Construct, id: str, params,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-
-        #self.ecr_repository = ecr.Repository(
-        #    self,
-        #    "Wordpress-ECR-Repository",
-        #    repository_name=params.fargate.container_image_name
-        #)
 
         github_secret = secretsmanager.CfnSecret(
             self,
@@ -90,8 +83,6 @@ class PipelineStack(core.NestedStack):
                                                         environment_variables={
                                                             "ENVIRONMENT": codebuild.BuildEnvironmentVariable(
                                                                 value=params.name),
-                                                            #"IMAGE_REPO_NAME": codebuild.BuildEnvironmentVariable(
-                                                             #   value=self.ecr_repository.repository_name),
                                                             "PRIMARY_DB_URI": codebuild.BuildEnvironmentVariable(
                                                                 value='wordpress.route53.rds'),
                                                             "SECONDARY_DB_URI": codebuild.BuildEnvironmentVariable(
@@ -104,12 +95,6 @@ class PipelineStack(core.NestedStack):
                                                                 "version": '0.2',
                                                                 "env": {},
                                                                 "phases": {
-                                                                    #"pre_build": {
-                                                                        #"commands": [
-                                                                            #"echo Logging in to Amazon ECR...",
-                                                                            #"aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
-                                                                        #]
-                                                                    #},
                                                                     "install": {
                                                                         "runtime-versions": {
                                                                             "nodejs": 12,
@@ -118,10 +103,6 @@ class PipelineStack(core.NestedStack):
                                                                         "commands": [
                                                                             "echo Build started on `date`",
                                                                             "echo Building the Docker image...",
-                                                                            #"cd images/wordpress",
-                                                                            #"docker build -t $IMAGE_REPO_NAME:latest .",
-                                                                            #"docker tag $IMAGE_REPO_NAME:latest  $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest",
-                                                                            #"docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest",
                                                                             "pip3 install -r requirements.txt",
                                                                             "npm install aws-cdk",
                                                                         ]

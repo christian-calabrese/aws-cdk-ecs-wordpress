@@ -91,7 +91,7 @@ Nel caso di questo progetto, ad esempio, il Dockerfile di Wordpress per la creaz
 rendendo impossibile il deploy disgiunto delle due parti.
 Questa caratteristica viene sfruttata maggiormente quando sono presenti delle funzioni Lambda. Infatti, è possibile mantenere il codice di infrastruttura CDK e Back-End nella stessa code base ed utilizzare lo stesso linguaggio di programmazione.
 
-(&ast;) Per far creare la codestar connection tra CodePipeline GitHub, è necessario aver creato un personal access token da salvare in secrets manager.
+(&ast;) Per far creare la codestar connection tra CodePipeline e GitHub, è necessario aver creato un personal access token da salvare in secrets manager nel secret chiamato `wordpress_secret_github_token`.
 Lo IaC è implementato in modo tale da prelevare tale token dal file `/infrastructure/parameters/uncommitted/.env.json`. Come si nota dalla path, questo file non è committato su git, perciò è possibile utilizzare il file `example.env.json` come base.
 
 ### Possibili ottimizzazioni:
