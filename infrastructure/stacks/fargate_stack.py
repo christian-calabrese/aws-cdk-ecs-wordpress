@@ -11,14 +11,13 @@ from aws_cdk import (
 )
 
 from infrastructure.stacks.database_stack import DatabaseStack
-from infrastructure.stacks.pipeline_stack import PipelineStack
 from infrastructure.stacks.vpc_stack import VpcStack
 
 
 class FargateStack(core.NestedStack):
 
     def __init__(self, scope: core.Construct, id: str, params, vpc_stack: VpcStack, database_stack: DatabaseStack,
-                 pipeline_stack: PipelineStack, **kwargs) -> None:
+                 **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         ecs_efs = efs.FileSystem(

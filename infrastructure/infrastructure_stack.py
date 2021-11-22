@@ -15,8 +15,8 @@ class InfrastructureStack(cdk.Stack):
         self.vpc_stack = VpcStack(scope=self, id="WordpressVpcStack", params=params)
         self.database_stack = DatabaseStack(scope=self, id="WordpressDatabaseStack", params=params,
                                             vpc_stack=self.vpc_stack)
-        self.pipeline_stack = PipelineStack(scope=self, id="WordpressPipelineStack", params=params)
         self.fargate_stack = FargateStack(scope=self, id="WordpressFargateStack", params=params,
                                           vpc_stack=self.vpc_stack,
-                                          database_stack=self.database_stack,
-                                          pipeline_stack=self.pipeline_stack)
+                                          database_stack=self.database_stack)
+        if params.get("ci_cd_enabled", False):
+            self.pipeline_stack = PipelineStack(scope=self, id="WordpressPipelineStack", params=params)

@@ -3,6 +3,7 @@
   "git_repository_name": "wordpress_ha_infrastructure",
   "github_token_secret_name": "wordpress_secret_github_token",
   "branch": "develop",
+  "ci_cd_enabled": true,
   "github_repository_owner": "christian-calabrese",
   "vpc": {
     "az_number": 3,
