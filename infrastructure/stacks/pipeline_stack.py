@@ -102,7 +102,6 @@ class PipelineStack(core.NestedStack):
                                                                         },
                                                                         "commands": [
                                                                             "echo Build started on `date`",
-                                                                            "echo Building the Docker image...",
                                                                             "pip3 install -r requirements.txt",
                                                                             "npm install aws-cdk",
                                                                         ]
