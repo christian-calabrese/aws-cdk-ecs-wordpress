@@ -50,7 +50,8 @@ root
     2. Unix `source .venv/bin/activate`
 7. Installa le dipendenze Python `pip3 install -r requirements.txt`
 8. Imposta la variabile d'ambiente ENVIRONMENT a dev o prod in base all'ambiente da deployare
-9. Deploya l'infrastruttura tramite `cdk deploy`
+9. Se è la prima volta che viene deployata l'architettura sull'AWS Account, [è necessario eseguire il comando](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html) `cdk bootstrap`  
+10. Deploya l'infrastruttura tramite `cdk deploy`
 
 ## 2. Scelte architetturali
 
