@@ -102,7 +102,7 @@ class FargateStack(core.NestedStack):
 
         ecs_wordpress_volume_mount_point = ecs.MountPoint(
             read_only=False,
-            container_path="/var/www/html",
+            container_path="/var/www/html/wp-content",
             source_volume=wordpress_volume.name
         )
 
