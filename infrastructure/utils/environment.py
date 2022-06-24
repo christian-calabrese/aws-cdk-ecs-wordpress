@@ -20,5 +20,5 @@ class Environment(SimpleNamespace):
             with open(f"{uncommitted_env_path}", "r") as f:
                 uncommitted_env = json.loads(f.read())
             instance.__dict__.update(uncommitted_env)
-        print(instance.__dict__)
+
         return instance
