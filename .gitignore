@@ -9,5 +9,7 @@ __pycache__
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+node_modules
+package*.json
 .idea
 infrastructure/parameters/uncommitted/.env.json
